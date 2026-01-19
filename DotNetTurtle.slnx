@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DotNetTurtle.Core/DotNetTurtle.Core.csproj" />
+    <Project Path="src/DotNetTurtle.Avalonia/DotNetTurtle.Avalonia.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/DotNetTurtle.Sample/DotNetTurtle.Sample.csproj" />
+  </Folder>
+</Solution>
