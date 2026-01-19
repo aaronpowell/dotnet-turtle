@@ -4,6 +4,23 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    
+    <!-- NuGet Package Metadata -->
+    <PackageId>DotNetTurtle.Core</PackageId>
+    <Title>DotNetTurtle Core</Title>
+    <Description>Core library for turtle graphics in .NET, inspired by Python's turtle module and Logo.</Description>
+    <Authors>Aaron Powell</Authors>
+    <PackageLicense>MIT</PackageLicense>
+    <PackageProjectUrl>https://github.com/aaronpowell/dotnet-turtle</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/aaronpowell/dotnet-turtle</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>turtle;graphics;logo;education;drawing</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>

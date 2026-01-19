@@ -4,7 +4,24 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    
+    <!-- NuGet Package Metadata -->
+    <PackageId>DotNetTurtle.Avalonia</PackageId>
+    <Title>DotNetTurtle Avalonia</Title>
+    <Description>Avalonia UI renderer for DotNetTurtle graphics library. Provides cross-platform turtle graphics for Windows, macOS, and Linux.</Description>
+    <Authors>Aaron Powell</Authors>
+    <PackageLicense>MIT</PackageLicense>
+    <PackageProjectUrl>https://github.com/aaronpowell/dotnet-turtle</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/aaronpowell/dotnet-turtle</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>turtle;graphics;logo;education;drawing;avalonia;cross-platform</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.11" />
