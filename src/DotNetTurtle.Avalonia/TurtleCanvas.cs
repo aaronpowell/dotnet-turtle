@@ -227,20 +227,20 @@ public class TurtleCanvas : Control, ITurtleCanvas
             var legLength = 8.0;
             var legWidth = 4.0;
             
-            // Front left leg
-            var frontLegGeom = CreateLeg(-6, -8, legLength, legWidth, -0.4);
-            context.DrawGeometry(skinBrush, outlinePen, frontLegGeom);
+            // Front left leg (pointing up-left: about -2.4 radians, ~-135 degrees)
+            var frontLeftLegGeom = CreateLeg(-6, -8, legLength, legWidth, -2.4);
+            context.DrawGeometry(skinBrush, outlinePen, frontLeftLegGeom);
             
-            // Front right leg
-            var frontRightLegGeom = CreateLeg(6, -8, legLength, legWidth, 0.4);
+            // Front right leg (pointing up-right: about -0.7 radians, ~-45 degrees)
+            var frontRightLegGeom = CreateLeg(6, -8, legLength, legWidth, -0.7);
             context.DrawGeometry(skinBrush, outlinePen, frontRightLegGeom);
             
-            // Back left leg
-            var backLeftLegGeom = CreateLeg(-6, 8, legLength, legWidth, -2.7);
+            // Back left leg (pointing down-left: about 2.4 radians, ~135 degrees)
+            var backLeftLegGeom = CreateLeg(-6, 8, legLength, legWidth, 2.4);
             context.DrawGeometry(skinBrush, outlinePen, backLeftLegGeom);
             
-            // Back right leg
-            var backRightLegGeom = CreateLeg(6, 8, legLength, legWidth, 2.7);
+            // Back right leg (pointing down-right: about 0.7 radians, ~45 degrees)
+            var backRightLegGeom = CreateLeg(6, 8, legLength, legWidth, 0.7);
             context.DrawGeometry(skinBrush, outlinePen, backRightLegGeom);
 
             // Tail
