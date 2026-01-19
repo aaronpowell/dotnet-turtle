@@ -13,11 +13,17 @@ public class TurtleCanvas : Control, ITurtleCanvas
 {
     private readonly List<DrawCommand> _commands = [];
     private readonly Dictionary<int, TurtleState> _turtles = [];
+    private readonly object _lock = new();
     private int _nextTurtleId = 0;
     private TurtleColor _backgroundColor = TurtleColor.White;
+    private double _width;
+    private double _height;
 
-    public TurtleCanvas()
+    public TurtleCanvas(double width, double height)
     {
+        _width = width;
+        _height = height;
+        
         // Provide a delay function that works with Avalonia's UI thread
         DelayFunc = async (ms) =>
         {
@@ -26,8 +32,14 @@ public class TurtleCanvas : Control, ITurtleCanvas
         };
     }
 
-    public new double Width => Bounds.Width;
-    public new double Height => Bounds.Height;
+    public new double Width => _width > 0 ? _width : Bounds.Width;
+    public new double Height => _height > 0 ? _height : Bounds.Height;
+
+    public void SetDimensions(double width, double height)
+    {
+        _width = width;
+        _height = height;
+    }
 
     public TurtleColor BackgroundColor
     {
@@ -41,39 +53,63 @@ public class TurtleCanvas : Control, ITurtleCanvas
 
     public Func<int, Task>? DelayFunc { get; set; }
 
-    public IReadOnlyList<DrawCommand> Commands => _commands.AsReadOnly();
+    public IReadOnlyList<DrawCommand> Commands
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _commands.ToList().AsReadOnly();
+            }
+        }
+    }
 
     public void AddCommand(DrawCommand command)
     {
-        _commands.Add(command);
+        lock (_lock)
+        {
+            _commands.Add(command);
+        }
     }
 
     public void Clear()
     {
-        _commands.Clear();
-        InvalidateVisual();
+        lock (_lock)
+        {
+            _commands.Clear();
+        }
+        Dispatcher.UIThread.Post(() => InvalidateVisual());
     }
 
     public void Invalidate()
     {
-        InvalidateVisual();
+        Dispatcher.UIThread.Post(() => InvalidateVisual());
     }
 
     public int RegisterTurtle(TurtleState state)
     {
-        var id = _nextTurtleId++;
-        _turtles[id] = state;
-        return id;
+        lock (_lock)
+        {
+            var id = _nextTurtleId++;
+            _turtles[id] = state;
+            return id;
+        }
     }
 
     public void UpdateTurtle(int turtleId, TurtleState state)
     {
-        _turtles[turtleId] = state;
+        lock (_lock)
+        {
+            _turtles[turtleId] = state;
+        }
     }
 
     public void RemoveTurtle(int turtleId)
     {
-        _turtles.Remove(turtleId);
+        lock (_lock)
+        {
+            _turtles.Remove(turtleId);
+        }
     }
 
     public override void Render(DrawingContext context)
@@ -84,14 +120,23 @@ public class TurtleCanvas : Control, ITurtleCanvas
         var bgBrush = new SolidColorBrush(ToAvaloniaColor(_backgroundColor));
         context.DrawRectangle(bgBrush, null, new Rect(0, 0, Bounds.Width, Bounds.Height));
 
+        // Take snapshots under lock
+        List<DrawCommand> commandsSnapshot;
+        List<TurtleState> turtlesSnapshot;
+        lock (_lock)
+        {
+            commandsSnapshot = [.. _commands];
+            turtlesSnapshot = [.. _turtles.Values];
+        }
+
         // Draw all commands
-        foreach (var command in _commands)
+        foreach (var command in commandsSnapshot)
         {
             RenderCommand(context, command);
         }
 
         // Draw all visible turtles
-        foreach (var turtle in _turtles.Values)
+        foreach (var turtle in turtlesSnapshot)
         {
             if (turtle.IsVisible)
             {

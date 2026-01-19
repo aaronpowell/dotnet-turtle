@@ -15,22 +15,28 @@ public sealed class TurtleWindow : IDisposable
     private readonly Thread _uiThread;
     private readonly ManualResetEventSlim _readyEvent = new();
     private readonly ManualResetEventSlim _closedEvent = new();
+    private readonly CancellationTokenSource _cts = new();
     private TurtleCanvas? _canvas;
     private Window? _window;
     private bool _disposed;
+    private double _width;
+    private double _height;
 
     /// <summary>
     /// Gets the canvas width.
     /// </summary>
-    public double Width => _canvas?.Width ?? 0;
+    public double Width => _width;
 
     /// <summary>
     /// Gets the canvas height.
     /// </summary>
-    public double Height => _canvas?.Height ?? 0;
+    public double Height => _height;
 
     private TurtleWindow(int width, int height, string title)
     {
+        _width = width;
+        _height = height;
+        
         _uiThread = new Thread(() => RunAvaloniaApp(width, height, title))
         {
             IsBackground = true,
@@ -94,12 +100,14 @@ public sealed class TurtleWindow : IDisposable
         if (_disposed) return;
         _disposed = true;
 
-        // If window is still open, wait for user to close it
+        // If window is still open, close it
         if (!_closedEvent.IsSet)
         {
+            Close();
             _closedEvent.Wait();
         }
 
+        _cts.Dispose();
         _readyEvent.Dispose();
         _closedEvent.Dispose();
     }
@@ -115,7 +123,7 @@ public sealed class TurtleWindow : IDisposable
                 ShutdownMode = ShutdownMode.OnMainWindowClose
             });
 
-        _canvas = new TurtleCanvas();
+        _canvas = new TurtleCanvas(width, height);
         
         // Set up the delay function to use Avalonia's dispatcher
         _canvas.DelayFunc = async (ms) =>
@@ -132,20 +140,35 @@ public sealed class TurtleWindow : IDisposable
             Content = _canvas
         };
 
-        _window.Closed += (_, _) => _closedEvent.Set();
+        _window.Closed += (_, _) =>
+        {
+            _closedEvent.Set();
+            _cts.Cancel();
+        };
 
-        _window.Opened += (_, _) =>
+        _window.Opened += async (_, _) =>
         {
             // Small delay to ensure canvas has valid bounds
-            Dispatcher.UIThread.Post(async () =>
-            {
-                await Task.Delay(50);
-                _readyEvent.Set();
-            });
+            await Task.Delay(100);
+            // Update dimensions from actual canvas size
+            if (_canvas.Bounds.Width > 0)
+                _width = _canvas.Bounds.Width;
+            if (_canvas.Bounds.Height > 0)
+                _height = _canvas.Bounds.Height;
+            _canvas.SetDimensions(_width, _height);
+            _readyEvent.Set();
         };
 
         _window.Show();
-        Dispatcher.UIThread.MainLoop(CancellationToken.None);
+        
+        try
+        {
+            Dispatcher.UIThread.MainLoop(_cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when window closes
+        }
     }
 }
 
