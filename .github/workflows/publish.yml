@@ -1,14 +1,9 @@
 name: Publish NuGet Package
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Package version (e.g., 1.0.0)"
-        required: true
-        type: string
+  push:
+    tags:
+      - "v*"
 
 jobs:
   publish:
@@ -25,11 +20,8 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          if [ "${{ github.event_name }}" == "release" ]; then
-            echo "version=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
-          fi
+          TAG="${GITHUB_REF#refs/tags/v}"
+          echo "version=$TAG" >> $GITHUB_OUTPUT
 
       - name: Restore dependencies
         run: dotnet restore
